@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Canteen Pre-Order System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='14' fill='%232563eb'/%3E%3Cpath d='M9 32a15 15 0 0 1 30 0z' fill='%23fff'/%3E%3Crect x='6' y='34' width='36' height='3.6' rx='1.8' fill='%23fff'/%3E%3Ccircle cx='24' cy='14.6' r='2.4' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="locked">
+<svg style="position:absolute;width:0;height:0" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--primary)"/></linearGradient></defs><symbol id="logoMark" viewBox="0 0 48 48"><rect width="48" height="48" rx="14" fill="url(#lg)"/><rect width="48" height="24" rx="14" fill="#fff" opacity=".12"/><path d="M9 32a15 15 0 0 1 30 0z" fill="#fff"/><path d="M13.5 29a11 11 0 0 1 8-8.6" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="2" stroke-linecap="round"/><rect x="6" y="34" width="36" height="3.6" rx="1.8" fill="#fff"/><circle cx="24" cy="14.6" r="2.4" fill="#fff"/><path d="M37 6.5l1.2 3.6 3.6 1.2-3.6 1.2L37 16l-1.2-3.5-3.6-1.2 3.6-1.2z" fill="#fff"/></symbol></svg><div id="fxBg"></div><canvas id="fx"></canvas>
+<div class="app" id="appRoot">
+<aside class="sidebar">
+  <div class="brand"><div class="logo"><svg viewBox="0 0 48 48"><use href="#logoMark"/></svg></div><span>Smart Canteen</span></div>
+  <nav class="nav">
+    <button class="active" data-view="menu"><em>🏠</em><span>Menu</span></button>
+    <button data-view="favorites"><em>❤️</em><span>Favourites</span><b class="badge" id="favBadge">0</b></button>
+    <button data-view="cart"><em>🛒</em><span>Cart</span><b class="badge" id="cartBadge">0</b></button>
+    <button data-view="checkout"><em>📋</em><span>Checkout</span></button>
+    <button data-view="tracking"><em>📍</em><span>Track Order</span></button>
+    <button data-view="dashboard"><em>📊</em><span>Canteen Dashboard</span></button>
+  </nav>
+  <button class="about-btn" onclick="openAbout()"><em>ℹ️</em><span>About &amp; rules</span></button>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div><h1 id="pageTitle">Canteen Menu</h1><div class="sub">Pre-order your food and skip the queue.</div></div>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
+  <button class="theme-toggle" onclick="openThemes(this,event)"><span class="themeEmoji">🎨</span><span>Theme</span></button>
+  <div class="user-pill" id="userPill"></div>
+  <button class="pillbtn" onclick="logout()">Log out</button>
+</div>
+</header>
+
+<section id="menu" class="view active">
+  <div class="hero"><h2 id="heroTitle">What would you like today?</h2><p>Choose from fresh food, beverages, ice-creams, snacks, desserts and value combos. Stock is updated automatically.</p></div>
+  <div class="search-row"><input class="search" id="search" placeholder="Search food, beverages, ice-cream..."></div>
+  <div class="filters" id="filters"></div>
+  <div id="menuContainer"></div>
+</section>
+
+<section id="favorites" class="view"><div id="favContainer"></div></section>
+
+<section id="cart" class="view">
+  <div class="cart-layout">
+    <div class="panel"><h2>Your Cart</h2><div id="cartItems"></div></div>
+    <div class="panel"><h2>Order Summary</h2><div id="cartSummary"></div></div>
+  </div>
+</section>
+
+<section id="checkout" class="view">
+  <div class="panel" style="max-width:900px;margin:auto">
+    <h2>Delivery & Payment Details</h2>
+    <p class="sub">Enter the details needed to deliver your order to your classroom.</p>
+    <form id="checkoutForm">
+      <div class="form-grid" style="margin-top:22px">
+        <div class="field"><label>Recipient Name</label><input id="name" required placeholder="Enter student name"></div>
+        <div class="field"><label>Class / Division</label><input id="className" required placeholder="e.g. SY-AIML-A"></div>
+        <div class="field"><label>Floor No.</label><select id="floor" required><option value="">Select floor</option><option>Ground Floor</option><option>1st Floor</option><option>2nd Floor</option><option>3rd Floor</option><option>4th Floor</option></select></div>
+        <div class="field"><label>Room / Classroom No.</label><input id="room" required placeholder="e.g. 204"></div>
+        <div class="field"><label>Preferred Arrival Time</label><div class="tp"><select id="tpH" aria-label="Hour"></select><b>:</b><select id="tpM" aria-label="Minute"></select><select id="tpP" aria-label="AM or PM"><option>AM</option><option>PM</option></select></div><input id="arrival" type="hidden"></div>
+        <div class="field"><label>Payment Method</label><select id="payment" required><option value="">Select payment</option><option>UPI</option><option>Cash on Delivery</option></select></div>
+        <div class="field full"><label>Special Note (optional)</label><input id="note" placeholder="Any delivery instruction..."></div>
+      </div>
+      <div class="info-box" id="etaBox" style="margin-top:18px" aria-live="polite"></div>
+      <button class="primary" type="submit">Confirm & Place Order</button>
+    </form>
+  </div>
+</section>
+
+<section id="tracking" class="view">
+  <div id="trackingContent"></div>
+</section>
+
+<section id="dashboard" class="view">
+  <div class="stats" id="stats"></div>
+  <div class="dashboard-grid">
+    <div class="panel"><h2>⚠️ Low Stock — Below 5</h2><div id="lowStock"></div></div>
+    <div class="panel"><h2>🔥 Most Ordered Items</h2><div id="popular"></div></div>
+  </div>
+  <div class="panel" style="margin-top:20px"><h2>📦 Recent Orders</h2><div id="recentOrders"></div></div>
+</section>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<button class="dock has" id="cartDock" onclick="navigate('cart')" aria-label="Open cart"><span class="dock-cart" id="dockCart">🛒<b id="dockCount">0</b></span><span class="dock-items" id="dockItems"></span><span class="dock-total" id="dockTotal"></span></button>
+<div class="auth" id="auth"><div class="auth-card" id="authCard" data-mode="login">
+  <div class="auth-brand"><div class="logo"><svg viewBox="0 0 48 48"><use href="#logoMark"/></svg></div><div><b style="font-size:20px">Smart Canteen</b><small>Pre-order and skip the queue</small></div></div>
+  <div class="tabs" role="tablist"><button id="tabLogin" role="tab" aria-selected="true" onclick="setMode('login')">Log in</button><button id="tabSignup" role="tab" aria-selected="false" onclick="setMode('signup')">Create account</button><span class="ink"></span></div>
+  <form id="authForm" novalidate>
+    <div class="field signup-only"><label for="aName">Full name</label><input id="aName" autocomplete="name" placeholder="As on your ID card"></div>
+    <div class="field"><label for="aId">Enrollment ID</label><input id="aId" autocomplete="username" placeholder="e.g. 2301230045"></div>
+    <div class="field"><label for="aPw">Password</label><div class="pw"><input id="aPw" type="password" autocomplete="current-password" placeholder="At least 6 characters"><button type="button" class="eye" onclick="const i=$('aPw');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'Show':'Hide'">Show</button></div></div>
+    <div class="field signup-only"><label for="aPw2">Confirm password</label><input id="aPw2" type="password" autocomplete="new-password"></div>
+    <label class="check"><input type="checkbox" id="aRemember" checked> Keep me signed in on this device</label>
+    <p class="auth-err" id="authErr" role="alert"></p>
+    <button class="primary" id="authBtn" type="submit" style="margin:0">Log in</button>
+  </form>
+</div></div>
+<button class="pillbtn auth-about" onclick="openAbout()">ℹ️ About &amp; rules</button>
+<button class="theme-toggle auth-theme" onclick="openThemes(this,event)"><span class="themeEmoji">🎨</span><span>Theme</span></button>
+<div class="theme-pop" id="themePop"><h4>Choose a theme</h4><div class="theme-grid" id="themeGrid"></div></div>
+<div class="modal" id="orderModal" aria-hidden="true"><div class="modal-card" role="dialog" aria-modal="true"><button class="modal-x" onclick="closeM('orderModal')" aria-label="Close">✕</button><div id="orderBody"></div></div></div>
+<div class="modal" id="payModal" aria-hidden="true"><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="payTitle" style="width:min(420px,100%);text-align:center"><button class="modal-x" onclick="closeM('payModal')" aria-label="Close">✕</button>
+  <h2 id="payTitle" style="margin:0 0 4px">Pay with UPI</h2><p class="sub" style="margin:0">Scan with Google Pay, PhonePe, Paytm or any UPI app. The amount is filled in for you, so don't change it.</p>
+  <div class="qr" id="qrBox"></div><p class="sub" style="margin:10px 0 0">Paying to <b id="payTo"></b></p><div class="pay-amt" id="payAmt"></div>
+  <p style="margin:4px 0 0"><a href="#" id="payOpen" style="color:var(--primary);font-weight:700">Paying from this phone? Open your UPI app</a></p>
+  <div class="field" id="idRow" style="text-align:left;margin-top:16px"><label for="payIn">After paying, enter the 12-digit UPI transaction ID</label><input id="payIn" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="e.g. 412345678901"><small class="sub">Find it in your payment app under the payment details (it may be called UTR or UPI Ref No.).</small></div>
+  <p class="auth-err" id="payErr" role="alert" style="margin:8px 0"></p>
+  <button class="primary" id="payBtn" onclick="confirmPay()" style="margin:0">I've paid, place my order</button>
+</div></div>
+<div class="modal" id="aboutModal" aria-hidden="true"><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <button class="modal-x" onclick="closeAbout()" aria-label="Close">✕</button>
+  <h2 id="aboutTitle" style="margin:0 0 10px">About Smart Canteen</h2>
+  <p>Smart Canteen lets students pre-order food, drinks and snacks and get them delivered to their classroom, so there is no queue to stand in. Stock updates as items are ordered.</p>
+  <h3>How to order</h3>
+  <ol><li>Log in with your Enrollment ID (create an account the first time).</li><li>Tap the heart on items you like. They show up under Favourites.</li><li>Press Add to Cart. Items stay in your cart until you remove them or place the order.</li><li>Open Cart, check quantities, then enter your class, floor, room, arrival time and payment method.</li><li>Follow your order under Track Order until it is delivered.</li></ol>
+  <h3>Rules</h3>
+  <ul><li>Use only your own Enrollment ID. One account per student, and never share your password.</li><li>You can order only what is in stock.</li><li>Enter the correct class, floor and room. Orders go to the details you give.</li><li>Be in your classroom at the arrival time you choose.</li><li>Fake or prank orders may get your account blocked by canteen staff.</li><li>Log out when using a shared computer.</li></ul>
+  <h3>Your data</h3>
+  <p>This version keeps accounts, carts, favourites and orders in this browser only. Passwords are hashed, but this is a project demo: a real deployment needs a server and database.</p>
+  <p class="sub">Smart Canteen Pre-Order System · v2.0</p>
+</div></div>
+
+<script src="qrcode.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
